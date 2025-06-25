@@ -7,6 +7,7 @@ Welcome to the **SQL Injection ML Detection** project! This repository showcases
 
 ## 📁 Project Structure
 
+```plaintext
 SQL_INJECTION_ML_BYPASS/
 │
 ├── Modified_SQL_Dataset.csv # 🗂️ Dataset used for training/testing
@@ -23,6 +24,7 @@ SQL_INJECTION_ML_BYPASS/
 ├── *.pkl # 💾 Saved models
 ├── *.png # 📊 Visual results (optional)
 └── vectorizer_setup.py # ⚙️ TF-IDF Vectorizer setup
+```
 
 ---
 
