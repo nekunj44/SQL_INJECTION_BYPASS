@@ -1,4 +1,4 @@
-# nb_bypass.py
+# nb_bypass_malicious_only.py
 
 import pandas as pd
 import random
@@ -10,11 +10,13 @@ from sklearn.metrics import classification_report
 model = joblib.load("nb_model.pkl")
 vectorizer = joblib.load("common_vectorizer.pkl")
 
-# Load dataset (all queries, both 0 and 1 labels)
+# Load dataset (only malicious queries)
 df = pd.read_csv("Modified_SQL_Dataset.csv")
 df.dropna(inplace=True)
-queries = df['Query'].astype(str).tolist()
-true_labels = df['Label'].tolist()
+
+malicious_df = df[df['Label'] == 1]
+malicious_queries = malicious_df['Query'].astype(str).tolist()
+true_labels = [1] * len(malicious_queries)  # All are malicious
 
 # Adversarial transformation functions
 def homoglyph_replace(query):
@@ -49,6 +51,7 @@ def cloak_payload(query):
 def inject_time_logic(query):
     return f"IF(1=1, SLEEP(5), 0)--{query}"
 
+# Apply 3 random transformations
 def generate_super_adversarial(query):
     transformations = [
         homoglyph_replace,
@@ -57,25 +60,30 @@ def generate_super_adversarial(query):
         cloak_payload,
         inject_time_logic,
     ]
-    transformed = query
     chosen = random.sample(transformations, 3)
+    transformed = query
     for func in chosen:
         transformed = func(transformed)
     return transformed
 
-# Generate adversarial samples
-super_adv_queries = [generate_super_adversarial(q) for q in queries]
+# Reproducibility
+random.seed(42)
+
+# Generate adversarial queries for malicious ones
+super_adv_queries = [generate_super_adversarial(q) for q in malicious_queries]
 
 # Predict
 X_super = vectorizer.transform(super_adv_queries)
 y_pred_super = model.predict(X_super)
 
-# Calculate malicious bypasses
-bypassed = sum(1 for true, pred in zip(true_labels, y_pred_super) if true == 1 and pred == 0)
+# Count bypasses
+bypassed = sum(1 for pred in y_pred_super if pred == 0)
+total = len(true_labels)
 
-# Report
-print("\n💀 NB Model - Super Aggressive Adversarial Test Results (Full Dataset):\n")
-print(f"⚠️  Summary: {bypassed} out of {true_labels.count(1)} malicious queries were BYPASSED after super-aggressive transformation.\n")
+# Print results
+print("\n💀 Naive Bayes Model - Targeted Adversarial Bypass Test:\n")
+print(f"⚠️  Summary: {bypassed} out of {total} malicious queries were BYPASSED.")
+print(f"📉 Bypass Rate: {(bypassed / total) * 100:.2f}%\n")
 
-print("📊 Classification Report on All Adversarial Queries:")
-print(classification_report(true_labels, y_pred_super))
+print("📊 Classification Report (Malicious Only):")
+print(classification_report(true_labels, y_pred_super, labels=[1]))

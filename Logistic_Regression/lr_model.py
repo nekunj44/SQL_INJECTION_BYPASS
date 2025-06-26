@@ -1,5 +1,3 @@
-# sql_injection_ml_model.py
-
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -17,11 +15,11 @@ y = df['Label']
 
 # TF-IDF Vectorization
 vectorizer = joblib.load("common_vectorizer.pkl")
-X_vectorized = vectorizer.fit_transform(X)
+X_vectorized = vectorizer.transform(X)
 
 # Train-Test Split
 X_train, X_test, y_train, y_test = train_test_split(
-    X_vectorized, y, test_size=0.2, random_state=42
+    X_vectorized, y, test_size=0.2, random_state=42, stratify=y
 )
 
 # Train Logistic Regression
@@ -37,4 +35,3 @@ print(classification_report(y_test, y_pred))
 
 # Save model and vectorizer for later use
 joblib.dump(model, "sql_model.pkl")
-joblib.dump(vectorizer, "common_vectorizer.pkl")

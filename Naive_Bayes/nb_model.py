@@ -21,7 +21,7 @@ X_vectorized = vectorizer.transform(df['Query'].astype(str))
 
 # Train-Test Split
 X_train, X_test, y_train, y_test = train_test_split(
-    X_vectorized, y, test_size=0.2, random_state=42
+    X_vectorized, y, test_size=0.2, random_state=42, stratify=y
 )
 
 # Train Naive Bayes
@@ -37,4 +37,4 @@ print(classification_report(y_test, y_pred))
 
 # Save model and vectorizer
 joblib.dump(model, "nb_model.pkl")
-joblib.dump(vectorizer, "common_vectorizer.pkl")
+
